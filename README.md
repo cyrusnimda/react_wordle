@@ -22,3 +22,6 @@ Develop a simple Wordle-like game using React.js. You may use Vite or any other 
 - Focus on clean, readable code and correct functionality.
 
 **Time Limit:** 60 minutes
+
+### Screenshot
+![Screenshot](https://pub-975a0e24fecb45ba92eb9c0470feaa32.r2.dev/wordle.png)
