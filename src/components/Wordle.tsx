@@ -5,8 +5,8 @@ import { Fireworks } from '@fireworks-js/react';
 
 function Wordle({ attempts }: { attempts: number }) {
     const [expectedWord, setExpectedWord] = useState<string>();
-    const [currentAttempt, setCurrentAttempt] = useState(0);
-    const fireworksRef = useRef(null);
+    const [currentAttempt, setCurrentAttempt] = useState<number>(0);
+    const fireworksRef = useRef<any>(null);
     const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
