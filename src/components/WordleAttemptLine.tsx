@@ -1,40 +1,42 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 
 
 function WordleAttemptLine(
-    { attempt, currentAttempt, expectedWord, winner, setCurrentAttempt, maxAttempts, setGameOver }:
-        { attempt: number; currentAttempt: number; expectedWord: string; winner: () => void; setCurrentAttempt: (attempt: number) => void; maxAttempts: number; setGameOver: (gameOver: boolean) => void }
+    { attempt, currentAttempt, expectedWord, setWinner, setCurrentAttempt, maxAttempts, setGameOver }:
+        { attempt: number; currentAttempt: number; expectedWord: string; setWinner: (winner: boolean) => void; setCurrentAttempt: (attempt: number) => void; maxAttempts: number; setGameOver: (gameOver: boolean) => void }
 ) {
     const isCurrentAttempt = currentAttempt === attempt;
     const [currentWord, setCurrentWord] = useState("");
     const [validationWord, setValidationWord] = useState<[string, string, string, string, string]>(['W', 'W', 'W', 'W', 'W']);
     const [validated, setValidated] = useState(false);
+    const [lineCompleted, setLineCompleted] = useState(false);
 
 
-
-    const validateWord = (word: string) => {
-        // 'W' -> wrong letter
-        // 'C' -> correct letter, wrong position
-        // 'P' -> correct letter, correct position
-        const newValidationWord = word.split('').map((char, index) => {
-            if (char.toLowerCase() === expectedWord[index].toLowerCase()) {
-                return 'P'; // correct letter, correct position
-            } else if (expectedWord.toLowerCase().includes(char.toLowerCase())) {
-                return 'C'; // correct letter, wrong position
-            } else {
-                return 'W'; // wrong letter
-            }
-        });
-        setTimeout(() => {
+    // Function to validate the current word against the expected word
+    useEffect(() => {
+        if (lineCompleted) {
+            // 'W' -> wrong letter
+            // 'C' -> correct letter, wrong position
+            // 'P' -> correct letter, correct position
+            const newValidationWord = currentWord.split('').map((char, index) => {
+                if (char.toLowerCase() === expectedWord[index].toLowerCase()) {
+                    return 'P'; // correct letter, correct position
+                } else if (expectedWord.toLowerCase().includes(char.toLowerCase())) {
+                    return 'C'; // correct letter, wrong position
+                } else {
+                    return 'W'; // wrong letter
+                }
+            });
             setValidated(true);
             setValidationWord(newValidationWord as [string, string, string, string, string]);
-        }, 100);
-    }
+        }
+    }, [lineCompleted]);
 
+    // useEffect to check for win/lose when validated changes
     useEffect(() => {
         if (validated) {
             if (currentWord.toLowerCase() === expectedWord?.toLowerCase()) {
-                winner();
+                setWinner(true);
             } else {
                 if (attempt === maxAttempts - 1) {
                     setGameOver(true);
@@ -49,14 +51,21 @@ function WordleAttemptLine(
     // useEffect para validar cuando currentWord llegue a 5 letras
     useEffect(() => {
         if (currentWord.length === 5 && isCurrentAttempt) {
-            // Usar setTimeout con 0ms para diferir hasta después del re-render
-            setTimeout(() => {
-                validateWord(currentWord);
-            }, 10);
+            setLineCompleted(true);
         }
     }, [currentWord, isCurrentAttempt]);
 
 
+    // reset state when expectedWord changes (new game)
+    useEffect(() => {
+        setCurrentWord("");
+        setValidationWord(['W', 'W', 'W', 'W', 'W']);
+        setValidated(false);
+        setLineCompleted(false);
+    }, [expectedWord]);
+
+
+    // Handle keyup events
     useEffect(() => {
         const handleKeyup = (e: KeyboardEvent) => {
             e.preventDefault();
@@ -79,6 +88,7 @@ function WordleAttemptLine(
             document.removeEventListener('keyup', handleKeyup);
         };
     }, [isCurrentAttempt, currentWord]);
+
 
     return <div key={attempt} className="mb-2">
         {
